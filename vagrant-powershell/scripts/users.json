@@ -1,0 +1,66 @@
+{
+    "password": "P0w3rsh311R0ck$",
+    "users": [
+        {
+            "name": "spadmin",
+            "desc": "SP",
+            "fullname": "SP farm admin"
+        },
+            {
+            "name": "spfarm",
+            "desc": "SP",
+            "fullname": "SP Farm User"
+        },
+        {
+            "name": "spapppool",
+            "desc": "SP",
+            "fullname": "SP App Pool"
+        },
+        {
+            "name": "spservice",
+            "desc": "SP",
+            "fullname": "SP service"
+        },
+        {
+            "name": "spups",
+            "desc": "SP",
+            "fullname": "SP UserProfileSync"
+        },
+        {
+            "name": "spsearch",
+            "desc": "SP",
+            "fullname": "SP Search"
+        },
+        {
+            "name": "spcrawl",
+            "desc": "SP Crawl",
+            "fullname": "SP crawl"
+        },
+        {
+            "name": "spsuperuser",
+            "desc": "SP",
+            "fullname": "SP Superuser"
+        },
+        {
+            "name": "spsuperreader",
+            "desc": "SP",
+            "fullname": "SP SuperReader"
+        },
+        {
+            "name": "spc2wts",
+            "desc": "SP C2WTS",
+            "fullname": "SP C2WTS"
+        },
+        {
+            "name": "spworkflowmgr",
+            "desc": "SP",
+            "fullname": "SP Workflow Manager"
+        },
+        {
+            "name": "spsql",
+            "desc": "SP",
+            "fullname": "SP SQL"
+        }
+    ]
+
+}

@@ -1,0 +1,121 @@
+require 'json'
+
+for p in ["vagrant-aws","vagrant-aws-winrm","vagrant-reload"] do
+    unless Vagrant.has_plugin?("#{p}")
+      raise "#{p} plugin required! Please run 'vagrant plugin install #{p}'"
+    end
+end
+
+json = JSON.parse(File.read(File.join(File.dirname(__FILE__), 'vars.json')))
+server = json['server']
+Vagrant.configure('2') do |config|
+    config.vm.define server['name'] do |srv|
+
+        srv.vm.provider :azure do |azure, override|
+            override.vm.box = json['az_box']
+            override.vm.box_url = json['az_box_url']
+            azure.tenant_id = ENV['AZURE_TENANT_ID']
+            azure.client_id = ENV['AZURE_CLIENT_ID']
+            azure.client_secret = ENV['AZURE_CLIENT_SECRET']
+            azure.subscription_id = ENV['AZURE_SUBSCRIPTION_ID']
+            azure.vm_name = server['name']
+            azure.vm_size = server['az_size']
+            azure.admin_username = server['az_user']
+            azure.vm_password = ENV['AZURE_WIN_PASSWORD']
+            azure.vm_image_urn = server['az_vm_image_urn']
+            azure.location = json['az_location']
+            azure.instance_ready_timeout = server['az_ready_timeout']
+
+            # azure networking
+            azure.tcp_endpoints = server['az_tcp_endpoints']
+            azure.resource_group_name = json['az_resource_group_name']
+            azure.nsg_name = json['az_nsg_name']
+            azure.dns_name = server['name']
+            azure.virtual_network_name = json['az_virtual_network_name']
+            azure.subnet_name = json['az_subnet_name']
+
+            # Windows server uses WinRM
+            srv.vm.guest = "windows"
+            srv.vm.communicator = :winrm
+            # Use self-signed cert for secure WinRM
+            azure.winrm_install_self_signed_cert = true
+            override.winrm.transport = :ssl
+            override.winrm.username = server['az_user']
+            override.winrm.password = ENV['AZURE_WIN_PASSWORD']
+            override.winrm.port = 5986
+            override.winrm.ssl_peer_verification = false # must be false if using a self signed cert
+            # try extra hard to connect to WinRM
+            override.winrm.retry_limit = 5
+            override.winrm.retry_delay = 15
+
+            # disable folder sync for Windows
+            config.vm.synced_folder ".", "/vagrant", disabled: true
+        end
+
+
+        # custom config block for AWS provider.
+        srv.vm.provider :aws do |aws, override|
+            override.vm.box = json['aws_box']
+            override.vm.box_url = json['aws_box_url']
+            aws.keypair_name = ENV['VAGRANT_AWS_KEYPAIR_NAME']
+            aws.access_key_id = ENV['VAGRANT_AWS_ACCESS_KEY']
+            aws.secret_access_key = ENV['VAGRANT_AWS_SECRET_KEY']
+            aws.security_groups = ENV['VAGRANT_AWS_SECURITY_GROUP']
+            override.ssh.private_key_path = ENV['VAGRANT_AWS_KEYPATH']
+            aws.region = json['aws_region']
+            aws.ami = json['aws_base_ami']
+            aws.instance_type = server['aws_size']
+            aws.tags = {
+            'Name'         => "#{server['machine_name']}"
+            }
+            aws.user_data = File.read('scripts/ConfigureRemotingForAnsible.txt')
+
+            # Windows server uses WinRM
+            srv.vm.guest = "windows"
+            srv.vm.communicator = :winrm
+            # Use self-signed cert for secure WinRM
+            override.winrm.transport = :ssl
+            override.winrm.username = server['aws_user']
+            override.winrm.password = :aws
+            override.winrm.port = 5986
+            override.winrm.ssl_peer_verification = false # must be false if using a self signed cert
+
+            # try extra hard to connect to WinRM
+            override.winrm.retry_limit = 5
+            override.winrm.retry_delay = 15
+
+            # disable folder sync for Windows
+            config.vm.synced_folder ".", "/vagrant", disabled: true
+
+        end
+
+        $script = <<-SCRIPT
+        mkdir -Force C:/scripts
+        SCRIPT
+        config.vm.provision :shell, inline: $script
+
+        config.vm.provision "file", source: "scripts/users.json", destination: "C:/scripts/users.json"
+
+        # Install Powershell 5.1
+        [ "install_choco.ps1",
+          "install_powershell.ps1"].each do |scriptName|
+            srv.vm.provision :shell, name: "#{scriptName}" do |s|
+              s.path = "scripts/#{scriptName}"
+              s.privileged = true
+              s.powershell_args = "-executionpolicy unrestricted"
+            end
+        end
+
+        # Powershell install requires reboot
+        srv.vm.provision :reload
+
+        [ "create_users.ps1"].each do |scriptName|
+            srv.vm.provision :shell, name: "#{scriptName}" do |s|
+              s.path = "scripts/#{scriptName}"
+              s.privileged = true
+              s.powershell_args = "-executionpolicy unrestricted"
+            end
+        end
+
+    end
+end
