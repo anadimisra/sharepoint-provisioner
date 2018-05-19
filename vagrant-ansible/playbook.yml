@@ -2,4 +2,5 @@
 - hosts: localhost
   roles:
   - prereqs
-  - ec2_vpc
+  - ec2-vpc
+  - ansible-roles/ec2-create-group
