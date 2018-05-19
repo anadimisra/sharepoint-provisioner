@@ -1,0 +1,15 @@
+---
+# ensure prereqs on localhost
+- block:
+  - name: ensure pip is installed on localhost
+    apt:
+      name: python-pip
+      state: present
+  - name: ensure pip packages are installed on localhost
+    pip:
+      name: "{{item}}"
+      state: present
+    with_items:
+    - boto3
+  delegate_to: localhost
+  become: true

@@ -1,0 +1,5 @@
+---
+- hosts: localhost
+  roles:
+  - prereqs
+  - ec2_vpc

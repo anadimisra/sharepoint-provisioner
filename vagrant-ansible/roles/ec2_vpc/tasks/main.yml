@@ -1,0 +1,32 @@
+---
+# as of ansible 2.5.3 the ec2_vpc_net task reports an unneeded change
+# even if VPC exists. So extra logic is needed to ensure idempotency.
+
+- name: Check whether VPC {{ec2_vpc_name}} exists.
+  ec2_vpc_net_facts:
+    filters:
+      'tag:Name': "{{ec2_vpc_name}}"
+  ignore_errors: true
+  register: vpc_details
+
+- block:
+  - name: Ensure a VPC {{ec2_vpc_name}} is created.
+    ec2_vpc_net:
+      name: "{{ec2_vpc_name}}"
+      cidr_block: "{{ec2_vpc_block}}"
+      region:
+      tags:
+        Name: "{{ec2_vpc_name}}"
+        ansible_managed: true
+      tenancy: default
+    register: vpc_created_details
+  - name: Store VPC ID for future use.
+    set_fact:
+      ec2_vpc_id: "{{vpc_created_details.vpc.id}}"
+  when: vpc_details is failed
+
+- debug: var=vpc_details
+- name: Store VPC ID for future use.
+  set_fact:
+    ec2_vpc_id: "{{vpc_details.vpcs[0].vpc_id}}"
+  when: vpc_details is succeeded
