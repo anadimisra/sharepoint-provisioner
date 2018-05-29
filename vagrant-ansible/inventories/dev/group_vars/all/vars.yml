@@ -10,3 +10,18 @@ ec2_ports:
  - { proto: "tcp", from: "8080", to: "8080" }
  - { proto: "tcp", from: "5986", to: "5986" }
  - { proto: "tcp", from: "1433", to: "1433" }
+
+vms:
+  sp:
+    instance_type: t2.large
+    count: 1
+    tags:
+      Name: sharepoint
+      Desc: Sharepoint Server
+
+user_data: |
+  <powershell>
+  $admin = [adsi]("WinNT://./administrator, user")
+  $admin.PSBase.Invoke("SetPassword", "myTempPassword123!")
+  Invoke-Expression ((New-Object System.Net.Webclient).DownloadString('https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1'))
+  </powershell>

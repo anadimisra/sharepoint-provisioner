@@ -14,3 +14,7 @@
 ## How to run
 
 `./run.sh` from a machine with AWS credentials configured.
+
+## References
+
+1. http://blog.rolpdog.com/2015/09/manage-stock-windows-amis-with-ansible.html
