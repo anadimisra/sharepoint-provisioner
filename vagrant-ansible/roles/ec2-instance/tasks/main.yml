@@ -2,24 +2,39 @@
 
 # Windows Server 2016: ami-3633b149
 
-- name: get EC2 AMI ID
-  ec2_ami_facts:
-    filters:
-      architecture: x86_64
-      is-public: true
+- block:
+  - name: get EC2 AMI ID
+    ec2_ami_facts:
+      owner: amazon
       region: "{{ec2_region}}"
-      name: Windows_Server-2016-English-Full-Base-2018.04.11
-  register: ec2_ami_details
+      filters:
+        architecture: x86_64
+        name: Windows_Server-2016-English-Full-Base-2018.04.11
+    register: ec2_ami_details
+  - set_fact: ec2_ami_id={{ec2_ami_details.images[0].image_id}}
+  - debug: var=ec2_ami_id
+  tags: ami,instance
 
-- debug: var=ec2_ami_details.images[0].image_id
+- block:
+  - name: get ec2 group details
+    ec2_group_facts:
+      region: "{{ec2_region}}"
+      filters:
+        group-name: "{{ec2_group_name}}"
+    register: ec2_group_details
 
-# - name: create ec2 instance
-#   ec2:
-#     instance_type: "{{item.value.instance_type}}"
-#     count: "{{item.value.count}}"
-#     group: "{{ec2_group_name}}"
-#     image:
-#     instance_tags: "{{item.value.tags}}"
-#     wait: yes
-#     user_data: "{{user_data}}"
-#   with_dict: "{{vms}}"
+  - set_fact: ec2_group_id={{ec2_group_details.security_groups[0].group_id}}
+
+  - name: create ec2 instance
+    ec2:
+      instance_type: "{{item.value.instance_type}}"
+      count: "{{item.value.count}}"
+      group: "{{ec2_group_name}}"
+      group_id: "{{ec2_group_id}}"
+      image: "{{ec2_ami_id}}"
+      instance_tags: "{{item.value.tags}}"
+      wait: yes
+      user_data: "{{user_data}}"
+    with_dict: "{{vms}}"
+
+  tags: instance
