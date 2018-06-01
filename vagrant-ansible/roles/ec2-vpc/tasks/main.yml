@@ -8,6 +8,7 @@
       'tag:Name': "{{ec2_vpc_name}}"
   ignore_errors: true
   register: vpc_details
+  tags: vpc,subnet
 
 - block:
   - name: Ensure a VPC {{ec2_vpc_name}} is created.
@@ -24,9 +25,33 @@
     set_fact:
       ec2_vpc_id: "{{vpc_created_details.vpc.id}}"
   when: vpc_details is failed
+  tags: vpc,subnet
 
 - debug: var=vpc_details
 - name: Store VPC ID for future use.
   set_fact:
     ec2_vpc_id: "{{vpc_details.vpcs[0].vpc_id}}"
   when: vpc_details is succeeded
+  tags: vpc,subnet
+
+- block:
+  - name: Ensure subnets exist within VPC.
+    ec2_vpc_subnet:
+      vpc_id: "{{ec2_vpc_id}}"
+      cidr: "{{item.value.cidr}}"
+      resource_tags:
+        Name: "{{item.key}}"
+    with_dict: "{{ec2_subnets}}"
+  - name: Get VPC subnet facts.
+    ec2_vpc_subnet_facts:
+      filters:
+        vpc-id: "{{ec2_vpc_id}}"
+      region: "{{ec2_region}}"
+    register: ec2_subnet_details
+  - name: filter relevant details of subnets.
+    set_fact:
+      ec2_subnet_ids: >
+        {{
+          ec2_subnet_details.subnets|json_query('[].{id: subnet_id,cidr: cidr_block,name: tags.Name}')
+        }}
+  tags: vpc,subnet

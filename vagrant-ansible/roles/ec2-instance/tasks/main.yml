@@ -27,14 +27,19 @@
 
   - name: create ec2 instance
     ec2:
+      region: "{{ec2_region}}"
       instance_type: "{{item.value.instance_type}}"
       count: "{{item.value.count}}"
       group: "{{ec2_group_name}}"
-      group_id: "{{ec2_group_id}}"
+      group_id: "{{ec2_group_name}}"
       image: "{{ec2_ami_id}}"
       instance_tags: "{{item.value.tags}}"
       wait: yes
       user_data: "{{user_data}}"
+      vpc_subnet_id: >
+        {{
+          ec2_subnet_ids|json_query("[?name=='sp'].id")
+        }}
     with_dict: "{{vms}}"
 
   tags: instance
