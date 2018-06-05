@@ -4,11 +4,7 @@ ec2_group_name: sharepointdev
 ec2_region: us-east-1
 ec2_vpc_name: sharepointvpc
 ec2_vpc_block: 10.10.0.0/16
-ec2_subnets:
-  sp:
-    cidr: 10.10.0.0/28
-  db:
-    cidr: 10.10.0.16/28
+
 ec2_ports:
  - { proto: "tcp", from: "80", to: "80" }
  - { proto: "tcp", from: "22", to: "22" }
@@ -16,10 +12,20 @@ ec2_ports:
  - { proto: "tcp", from: "5986", to: "5986" }
  - { proto: "tcp", from: "1433", to: "1433" }
 
+# Dictionary of subnet address spaces.
+# Each key here must match the key in "vms" dictionary below.
+ec2_subnets:
+  sp:
+    cidr: 10.10.0.0/28
+  db:
+    cidr: 10.10.0.16/28
+
+# Dictionary of VMs.
 vms:
   sp:
     instance_type: t2.large
     count: 1
+    cidr: "{{ec2_subnets.sp.cidr}}"
     tags:
       Name: sharepoint
       Desc: Sharepoint Server

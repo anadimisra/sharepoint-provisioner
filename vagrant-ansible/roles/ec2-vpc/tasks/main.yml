@@ -48,10 +48,4 @@
         vpc-id: "{{ec2_vpc_id}}"
       region: "{{ec2_region}}"
     register: ec2_subnet_details
-  - name: filter relevant details of subnets.
-    set_fact:
-      ec2_subnet_ids: >
-        {{
-          ec2_subnet_details.subnets|json_query('[].{id: subnet_id,cidr: cidr_block,name: tags.Name}')
-        }}
   tags: vpc,subnet

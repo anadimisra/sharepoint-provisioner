@@ -1,1 +1,34 @@
 ---
+# We generate a JSON query dynamically and store it in a variable.
+- name: Generate subnet query.
+  set_fact: subnet_query="[?tags.Name=='{{vm_name}}'].subnet_id"
+
+# >- is a YAML parsing construct that helps avoid a newline character at the end of query.
+# |first is a Jinja2 filter that returns us the first eleemnt of the array.
+
+- name: Get subnet ID.
+  set_fact:
+    ec2_subnet_id: >-
+      {{
+        ec2_subnet_details.subnets|json_query(subnet_query)|first
+      }}
+
+- fail:
+    msg: |
+      Error: Subnet not found for {{vm_name}}!
+      Query: {{subnet_query}}
+      Subnet Details: {{ec2_subnet_details}}"
+  when: ec2_subnet_id|length == 0
+
+- name: create ec2 instance vm_name
+  ec2:
+    region: "{{ec2_region}}"
+    instance_type: "{{item.value.instance_type}}"
+    count: "{{item.value.count}}"
+    group: "{{ec2_group_name}}"
+    group_id: "{{ec2_group_name}}"
+    image: "{{ec2_ami_id}}"
+    instance_tags: "{{vm_details.tags}}"
+    wait: yes
+    user_data: "{{user_data}}"
+    vpc_subnet_id: "{{ec2_subnet_id}}"
