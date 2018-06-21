@@ -12,6 +12,7 @@
       {{
         ec2_subnet_details.subnets|json_query(subnet_query)|first
       }}
+  tags: always
 
 - fail:
     msg: |
@@ -19,6 +20,7 @@
       Query: {{subnet_query}}
       Subnet Details: {{ec2_subnet_details}}"
   when: ec2_subnet_id|length == 0
+  tags: instance
 
 - name: create ec2 instance vm_name
   ec2:
@@ -29,6 +31,8 @@
     group_id: "{{ec2_group_name}}"
     image: "{{ec2_ami_id}}"
     instance_tags: "{{vm_details.tags}}"
+    id: "{{client_tokens[vm_name]}}"
     wait: yes
     user_data: "{{user_data}}"
     vpc_subnet_id: "{{ec2_subnet_id}}"
+  tags: instance

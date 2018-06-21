@@ -2,13 +2,17 @@
 # as of ansible 2.5.3 the ec2_vpc_net task reports an unneeded change
 # even if VPC exists. So extra logic is needed to ensure idempotency.
 
+# facts needed by multiple tasks should always run
+# even if we run the playbook with --tags.
+# so we specify tags: always
+
 - name: Check whether VPC {{ec2_vpc_name}} exists.
   ec2_vpc_net_facts:
     filters:
       'tag:Name': "{{ec2_vpc_name}}"
   ignore_errors: true
   register: vpc_details
-  tags: vpc,subnet
+  tags: always
 
 - block:
   - name: Ensure a VPC {{ec2_vpc_name}} is created.
@@ -25,27 +29,28 @@
     set_fact:
       ec2_vpc_id: "{{vpc_created_details.vpc.id}}"
   when: vpc_details is failed
-  tags: vpc,subnet
+  tags: always
 
 - debug: var=vpc_details
 - name: Store VPC ID for future use.
   set_fact:
     ec2_vpc_id: "{{vpc_details.vpcs[0].vpc_id}}"
   when: vpc_details is succeeded
-  tags: vpc,subnet
+  tags: always
 
-- block:
-  - name: Ensure subnets exist within VPC.
-    ec2_vpc_subnet:
-      vpc_id: "{{ec2_vpc_id}}"
-      cidr: "{{item.value.cidr}}"
-      resource_tags:
-        Name: "{{item.key}}"
-    with_dict: "{{ec2_subnets}}"
-  - name: Get VPC subnet facts.
-    ec2_vpc_subnet_facts:
-      filters:
-        vpc-id: "{{ec2_vpc_id}}"
-      region: "{{ec2_region}}"
-    register: ec2_subnet_details
-  tags: vpc,subnet
+- name: Ensure subnets exist within VPC.
+  ec2_vpc_subnet:
+    vpc_id: "{{ec2_vpc_id}}"
+    cidr: "{{item.value.cidr}}"
+    resource_tags:
+      Name: "{{item.key}}"
+  with_dict: "{{ec2_subnets}}"
+  tags: always
+
+- name: Get VPC subnet facts.
+  ec2_vpc_subnet_facts:
+    filters:
+      vpc-id: "{{ec2_vpc_id}}"
+    region: "{{ec2_region}}"
+  register: ec2_subnet_details
+  tags: always

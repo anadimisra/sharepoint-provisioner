@@ -24,15 +24,24 @@ ec2_subnets:
 vms:
   sp:
     instance_type: t2.large
+    idempotent_token: 1VpOzwrOpQIU0cuO6fdQ
     count: 1
     cidr: "{{ec2_subnets.sp.cidr}}"
     tags:
       Name: sharepoint
       Desc: Sharepoint Server
 
+# For details of token, see
+# https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html
+
+client_tokens:
+  sp: 1VpOzwrO
+  db: lbFm8B1X
+  ad: U3hMOtsC
+
 user_data: |
   <powershell>
   $admin = [adsi]("WinNT://./administrator, user")
-  $admin.PSBase.Invoke("SetPassword", "myTempPassword123!")
+  $admin.PSBase.Invoke("SetPassword", "{{vault_win_admin_pass}}")
   Invoke-Expression ((New-Object System.Net.Webclient).DownloadString('https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1'))
   </powershell>
