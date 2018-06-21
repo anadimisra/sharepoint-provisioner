@@ -35,9 +35,9 @@ vms:
 # https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html
 
 client_tokens:
-  sp: 1VpOzwrO
-  db: lbFm8B1X
-  ad: U3hMOtsC
+  sp: sp0098cd38117ac3e
+  db: db49ce338403c09cf
+  ad: adc1ad9efa2df97ae
 
 user_data: |
   <powershell>
