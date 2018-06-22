@@ -37,9 +37,9 @@ vms:
 # https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html
 # CLient Token is used to pass the idempotent token as well as decide the instance ID.
 client_tokens:
-  sp: 0098cd38117ac3esp
-  db: 49ce338403c09cfdb
-  ad: 1cad9efa2df97aead
+  sp: 0098cdsp
+  db: 49ce33db
+  ad: 1cad9ead
 
 user_data: |
   <powershell>
