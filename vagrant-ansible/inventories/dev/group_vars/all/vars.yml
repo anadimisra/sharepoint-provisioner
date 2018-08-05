@@ -17,33 +17,76 @@ ec2_ports:
 # Dictionary of subnet address spaces.
 # Each key here must match the key in "vms" dictionary below.
 ec2_subnets:
-  sp:
+  ad:
     cidr: 10.10.0.0/28
-  db:
+  sp:
     cidr: 10.10.0.16/28
+  db:
+    cidr: 10.10.0.32/28
 
-# Dictionary of VMs.
+# Dictionary of VMs. All VMs are created with the same OS.
 vms:
+  ad:
+    instance_type: t2.large
+    idempotent_token: "{{client_tokens.ad}}"
+    count: 1
+    cidr: "{{ec2_subnets.ad.cidr}}"
+    tags:
+      Name: ad_domain_controller
+      Desc: Active Directory DC for SharePoint
+  db:
+    instance_type: t2.large
+    idempotent_token: "{{client_tokens.db}}"
+    count: 1
+    cidr: "{{ec2_subnets.db.cidr}}"
+    tags:
+      Name: sql_server
+      Desc: MS SQL Server 2016
   sp:
     instance_type: t2.large
-    idempotent_token: 1VpOzwrOpQIU0cuO6fdQ
+    idempotent_token: "{{client_tokens.sp}}"
     count: 1
     cidr: "{{ec2_subnets.sp.cidr}}"
     tags:
-      Name: sharepoint
-      Desc: Sharepoint Server
+      Name: sharepoint_server
+      Desc: Sharepoint Server 2016
 
 # For details of token, see
 # https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html
 # CLient Token is used to pass the idempotent token as well as decide the instance ID.
+# Note - Longer 17-char instance IDs used.
+# Note - instance id format is i-[17 chars] where chars are 0-9 and a-f.
 client_tokens:
-  sp: 0098cdsp
-  db: 49ce33db
-  ad: 1cad9ead
+  sp: 0098cdablf9091a0b
+  db: 49ce33dbabce16111
+  ad: 1cad9eadfabdc3eef
 
+# User Data to bootstrap VMs with. Enables WinRM as well as sets admin password.
 user_data: |
   <powershell>
   $admin = [adsi]("WinNT://./administrator, user")
   $admin.PSBase.Invoke("SetPassword", "{{vault_win_admin_pass}}")
   Invoke-Expression ((New-Object System.Net.Webclient).DownloadString('https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1'))
   </powershell>
+
+# Active Directory Details
+
+dns_domain_name: ''
+domain_admin_password: 'Chang3M3!N000w'
+domain_admin_username: '{{inventory_hostname}}\{{ansible_user}}'
+domain_admin_username_client: '{{dns_name}}\{{ansible_user}}'
+domain_ou_path: 'Windows'
+
+# List of AD Accounts
+ad_accounts:
+- sp_mssql_svc_acc
+- sp_admin_svc_acc
+- sp_farm_svc_acc
+- sp_app_pool_svc_acc
+- sp_service_svc_acc
+
+# OU to be created
+domain_ou_name: "Windows"
+
+# OU Path
+domain_ou_path: "OU={{domain_ou_name}},DC="

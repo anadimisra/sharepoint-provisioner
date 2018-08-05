@@ -9,7 +9,7 @@
       region: "{{ec2_region}}"
       filters:
         architecture: x86_64
-        name: Windows_Server-2016-English-Full-Base-2018.04.11
+        name: '{{ec2_win2016_ami_name}}'
     register: ec2_ami_details
   - set_fact: ec2_ami_id={{ec2_ami_details.images[0].image_id}}
   - debug: var=ec2_ami_id

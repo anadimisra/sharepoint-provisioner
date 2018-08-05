@@ -18,3 +18,5 @@
 ## References
 
 1. http://blog.rolpdog.com/2015/09/manage-stock-windows-amis-with-ansible.html
+1. ABCD of Powershell and Sharepoint: https://www.sphammad.com/blog/abcd-of-powershell-automating-sharepoint-2016-installation
+1. Which Service accounts to use with Sharepoint: https://docs.microsoft.com/en-us/sharepoint/security-for-sharepoint-server/plan-for-administrative-and-service-accounts

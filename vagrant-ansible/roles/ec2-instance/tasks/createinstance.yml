@@ -22,7 +22,7 @@
   when: ec2_subnet_id|length == 0
   tags: instance
 
-- name: create ec2 instance vm_name
+- name: create ec2 instance {{vm_name}} -
   ec2:
     region: "{{ec2_region}}"
     instance_type: "{{item.value.instance_type}}"
@@ -31,9 +31,9 @@
     group_id: "{{ec2_group_name}}"
     image: "{{ec2_ami_id}}"
     instance_tags: "{{vm_details.tags}}"
-    id: "{{client_tokens[vm_name]}}"
+    id: i-{{client_tokens[vm_name]}}
     instance_ids:
-    - "i-{{client_tokens[vm_name]}}"
+    - i-{{client_tokens[vm_name]}}
     wait: yes
     state: running
     user_data: "{{user_data}}"
