@@ -1,0 +1,4 @@
+- name: add host to group 'just_created' with variable foo=42
+  add_host:
+    inventory_dir: '{{inventory_dir}}'
+  tags: inventoryupdate

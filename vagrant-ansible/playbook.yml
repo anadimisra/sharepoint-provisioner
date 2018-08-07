@@ -5,3 +5,8 @@
   - ec2-vpc
   - ansible-roles/ec2-create-group
   - ec2-instance
+
+- hosts: localhost
+  roles:
+  - update-inventory
+  tags: inventoryupdate

@@ -31,11 +31,11 @@
     group_id: "{{ec2_group_name}}"
     image: "{{ec2_ami_id}}"
     instance_tags: "{{vm_details.tags}}"
-    id: i-{{client_tokens[vm_name]}}
-    instance_ids:
-    - i-{{client_tokens[vm_name]}}
+    id: '{{client_tokens[vm_name]}}'
+    #instance_ids:
+    #- i-{{client_tokens[vm_name]}}
     wait: yes
-    state: running
+    state: present
     user_data: "{{user_data}}"
     vpc_subnet_id: "{{ec2_subnet_id}}"
   tags: instance
