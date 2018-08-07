@@ -57,9 +57,9 @@ vms:
 # Note - Longer 17-char instance IDs used.
 # Note - instance id format is i-[17 chars] where chars are 0-9 and a-f.
 client_tokens:
-  sp: 0098cdab1f9091a0b
-  db: 49ce33dbabce16111
-  ad: 1cad9eadfabdc3eef
+  sp: 0098cdab1f9091a0c
+  db: 49ce33dbabce16112
+  ad: 1cad9eadfabdc3eeg
 
 # User Data to bootstrap VMs with. Enables WinRM as well as sets admin password.
 user_data: |

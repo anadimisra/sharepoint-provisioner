@@ -10,3 +10,7 @@
   roles:
   - update-inventory
   tags: inventoryupdate
+
+- hosts: tag_Name_ad_domain_controller
+  roles:
+  - addc
