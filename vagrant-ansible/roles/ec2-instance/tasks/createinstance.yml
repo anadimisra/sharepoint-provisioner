@@ -38,4 +38,5 @@
     state: present
     user_data: "{{user_data}}"
     vpc_subnet_id: "{{ec2_subnet_id}}"
+    assign_public_ip: '{{public_ip}}'
   tags: instance

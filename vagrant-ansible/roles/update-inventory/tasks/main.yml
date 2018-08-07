@@ -1,4 +1,6 @@
-- name: add host to group 'just_created' with variable foo=42
-  add_host:
-    inventory_dir: '{{inventory_dir}}'
+# https://stackoverflow.com/questions/29003420/reload-ansibles-dynamic-inventory
+- name: Refresh the inventory 
+  meta: refresh_inventory
+  # add_host:
+  #   inventory_dir: '{{inventory_dir}}'
   tags: inventoryupdate
